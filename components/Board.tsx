@@ -25,7 +25,9 @@ export const Board: React.FC<BoardProps> = ({
     if (activeSkill === 'thunder') return 'crosshair';
     if (activeSkill === 'convert') return 'alias';
     if (activeSkill === 'portal') return selectedCell ? 'copy' : 'grab';
+    if (activeSkill === 'swap') return selectedCell ? 'alias' : 'grab';
     if (activeSkill === 'bomb') return 'crosshair';
+    if (activeSkill === 'double') return 'copy';
     if (!activeSkill && !isAiThinking) return 'pointer';
     return 'wait';
   };
@@ -60,9 +62,12 @@ export const Board: React.FC<BoardProps> = ({
             <div className="absolute top-2 left-1/2 -translate-x-1/2 z-30 px-3 py-1 rounded-full bg-black/70 text-white text-xs font-bold pointer-events-none backdrop-blur-sm whitespace-nowrap">
                {activeSkill === 'portal' && !selectedCell ? 'Select Stone to Move' : ''}
                {activeSkill === 'portal' && selectedCell ? 'Select Empty Space' : ''}
+               {activeSkill === 'swap' && !selectedCell ? 'Select Your Stone' : ''}
+               {activeSkill === 'swap' && selectedCell ? 'Select Opponent Stone' : ''}
                {activeSkill === 'bomb' ? 'Select Area to Bomb (3x3)' : ''}
                {activeSkill === 'thunder' ? 'Select Stone to Destroy' : ''}
                {activeSkill === 'convert' ? 'Select Opponent Stone' : ''}
+               {activeSkill === 'double' ? 'Place Free Stone' : ''}
             </div>
           )}
 
@@ -93,6 +98,11 @@ export const Board: React.FC<BoardProps> = ({
                       if (!selectedCell && cell === 'white') hoverClass = 'hover:ring-4 hover:ring-blue-400 rounded-full';
                       else if (selectedCell && !cell) hoverClass = 'hover:bg-blue-500/30 rounded-full hover:after:content-[""] hover:after:w-3 hover:after:h-3 hover:after:bg-blue-500 hover:after:rounded-full flex justify-center items-center';
                     }
+                    else if (activeSkill === 'swap') {
+                      if (!selectedCell && cell === 'white') hoverClass = 'hover:ring-4 hover:ring-emerald-400 rounded-full';
+                      else if (selectedCell && cell === 'black') hoverClass = 'hover:ring-4 hover:ring-emerald-600 hover:bg-emerald-500/30 rounded-full';
+                    }
+                    else if (activeSkill === 'double' && !cell) hoverClass = 'hover:after:content-[""] hover:after:w-3 hover:after:h-3 hover:after:bg-black/60 hover:after:rounded-full flex justify-center items-center ring-2 ring-yellow-400/50 rounded-full';
                     else if (!activeSkill && !cell) hoverClass = 'hover:after:content-[""] hover:after:w-3 hover:after:h-3 hover:after:bg-black/20 hover:after:rounded-full flex justify-center items-center';
                   }
 
@@ -110,9 +120,9 @@ export const Board: React.FC<BoardProps> = ({
                        </div>
                     )}
 
-                    {/* Portal Selection Ring */}
+                    {/* Selection Ring */}
                     {isSelected && (
-                       <div className="absolute inset-[-4px] z-0 border-2 border-blue-500 rounded-full animate-pulse"></div>
+                       <div className={`absolute inset-[-4px] z-0 border-2 rounded-full animate-pulse ${activeSkill === 'swap' ? 'border-emerald-500' : 'border-blue-500'}`}></div>
                     )}
 
                     {cell && (

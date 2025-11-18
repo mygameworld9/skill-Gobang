@@ -18,8 +18,10 @@ export const useGameState = () => {
   const [cooldowns, setCooldowns] = useState<Record<SkillType, number>>({
     thunder: 0,
     bomb: 0,
+    double: 0,
     convert: 0,
-    portal: 0
+    portal: 0,
+    swap: 0
   });
   const [selectedCell, setSelectedCell] = useState<Coordinate | null>(null);
 
@@ -40,10 +42,12 @@ export const useGameState = () => {
           if (player === 'black') {
             newState.thunder = Math.max(0, newState.thunder - 1);
             newState.bomb = Math.max(0, newState.bomb - 1);
+            newState.double = Math.max(0, newState.double - 1);
             setCurrentPlayer('white');
           } else {
             newState.convert = Math.max(0, newState.convert - 1);
             newState.portal = Math.max(0, newState.portal - 1);
+            newState.swap = Math.max(0, newState.swap - 1);
             setCurrentPlayer('black');
           }
           return newState;
@@ -60,13 +64,15 @@ export const useGameState = () => {
     let skillCooldownValue = 0;
     let gameWon = false; // Track if this skill resulted in a win
 
-    // PORTAL SKILL LOGIC (2-Step)
+    // 2-STEP SKILLS
+    
+    // PORTAL: White moves White stone
     if (activeSkill === 'portal' && currentPlayer === 'white') {
       // Step 1: Select Source (Own Stone)
       if (!selectedCell) {
         if (board[r][c] === 'white') {
           setSelectedCell({ row: r, col: c });
-          return false; // Don't consume turn yet, waiting for destination
+          return false; // Don't consume turn yet
         }
         return false; // Invalid selection
       } 
@@ -86,12 +92,51 @@ export const useGameState = () => {
              }
              return newBoard;
            });
-           setLastMove({row: r, col: c}); // Update last move to new position
+           setLastMove({row: r, col: c});
            moveSuccessful = true;
            skillCooldownValue = SKILL_COOLDOWNS.whitePortal;
         } else if (board[r][c] === 'white') {
-          // Change selection
+          setSelectedCell({ row: r, col: c }); // Change selection
+          return false;
+        }
+      }
+    }
+    
+    // SWAP: White swaps White stone with Black stone
+    else if (activeSkill === 'swap' && currentPlayer === 'white') {
+      // Step 1: Select Own Stone
+      if (!selectedCell) {
+        if (board[r][c] === 'white') {
           setSelectedCell({ row: r, col: c });
+          return false;
+        }
+        return false;
+      }
+      // Step 2: Select Opponent Stone
+      else {
+        if (board[r][c] === 'black') {
+          setBoard(prev => {
+            const newBoard = prev.map(row => [...row]);
+            newBoard[selectedCell.row][selectedCell.col] = 'black';
+            newBoard[r][c] = 'white';
+            
+            const win = checkWin(newBoard, r, c, 'white');
+            if (win) {
+              setGameStatus('won');
+              setWinningLine(win);
+              gameWon = true;
+            }
+            // Note: We don't strictly check if Black won on the other square, 
+            // as risk of swapping is part of the skill, but for this game engine, 
+            // we only check active player win on skill use.
+            return newBoard;
+          });
+          // lastMove doesn't really apply to swap nicely, but we point to the new white pos
+          setLastMove({row: r, col: c});
+          moveSuccessful = true;
+          skillCooldownValue = SKILL_COOLDOWNS.whiteSwap;
+        } else if (board[r][c] === 'white') {
+          setSelectedCell({ row: r, col: c }); // Change selection
           return false;
         }
       }
@@ -112,7 +157,6 @@ export const useGameState = () => {
         }
         // BLACK SKILL: BOMB (AOE Destroy)
         else if (activeSkill === 'bomb' && currentPlayer === 'black') {
-           // Destroy everything in 3x3 area
            for (let i = r - 1; i <= r + 1; i++) {
              for (let j = c - 1; j <= c + 1; j++) {
                if (i >= 0 && i < BOARD_SIZE && j >= 0 && j < BOARD_SIZE) {
@@ -120,11 +164,25 @@ export const useGameState = () => {
                }
              }
            }
-           
            moveSuccessful = true;
-           turnConsumed = true;
            skillCooldownValue = SKILL_COOLDOWNS.blackBomb;
            setLastMove({row: r, col: c});
+        }
+        // BLACK SKILL: DOUBLE (Place stone, keep turn)
+        else if (activeSkill === 'double' && currentPlayer === 'black') {
+          if (newBoard[r][c] === null) {
+            newBoard[r][c] = 'black';
+            const win = checkWin(newBoard, r, c, 'black');
+            if (win) {
+               setGameStatus('won');
+               setWinningLine(win);
+               gameWon = true;
+            }
+            moveSuccessful = true;
+            turnConsumed = false; // KEY: Keep turn!
+            skillCooldownValue = SKILL_COOLDOWNS.blackDouble;
+            setLastMove({row: r, col: c});
+          }
         }
         // WHITE SKILL: CONVERT
         else if (activeSkill === 'convert' && currentPlayer === 'white') {
@@ -150,19 +208,25 @@ export const useGameState = () => {
       setCooldowns(prev => {
         const newState = { ...prev };
         if (currentPlayer === 'black') {
-          // Decrement others
-          if (activeSkill !== 'thunder') newState.thunder = Math.max(0, newState.thunder - 1);
-          if (activeSkill !== 'bomb') newState.bomb = Math.max(0, newState.bomb - 1);
+          // Decrement others only if turn consumed
+          if (turnConsumed) {
+            if (activeSkill !== 'thunder') newState.thunder = Math.max(0, newState.thunder - 1);
+            if (activeSkill !== 'bomb') newState.bomb = Math.max(0, newState.bomb - 1);
+            if (activeSkill !== 'double') newState.double = Math.max(0, newState.double - 1);
+          }
           
-          // Set active
+          // Set active skill cooldown
           if (activeSkill) newState[activeSkill] = skillCooldownValue;
           
-          // Switch player only if game not won
+          // Switch player only if game not won and turn consumed
           if (turnConsumed && !gameWon) setCurrentPlayer('white');
         } else {
           // Decrement others
-          if (activeSkill !== 'convert') newState.convert = Math.max(0, newState.convert - 1);
-          if (activeSkill !== 'portal') newState.portal = Math.max(0, newState.portal - 1);
+          if (turnConsumed) {
+            if (activeSkill !== 'convert') newState.convert = Math.max(0, newState.convert - 1);
+            if (activeSkill !== 'portal') newState.portal = Math.max(0, newState.portal - 1);
+            if (activeSkill !== 'swap') newState.swap = Math.max(0, newState.swap - 1);
+          }
           
           // Set active
           if (activeSkill) newState[activeSkill] = skillCooldownValue;
@@ -176,7 +240,6 @@ export const useGameState = () => {
       setActiveSkill(null);
       setSelectedCell(null);
       
-      // Special case: Thunder might remove the 'lastMove' highlight if we destroyed the last piece
       if (activeSkill === 'thunder' && lastMove?.row === r && lastMove?.col === c) {
         setLastMove(null);
       }
@@ -204,7 +267,7 @@ export const useGameState = () => {
     setCurrentPlayer('black');
     setActiveSkill(null);
     setSelectedCell(null);
-    setCooldowns({ thunder: 0, bomb: 0, convert: 0, portal: 0 });
+    setCooldowns({ thunder: 0, bomb: 0, double: 0, convert: 0, portal: 0, swap: 0 });
   }, []);
 
   return {

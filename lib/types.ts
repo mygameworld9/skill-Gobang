@@ -3,7 +3,7 @@ export type Player = 'black' | 'white';
 export type Cell = Player | null;
 export type Lang = 'zh' | 'en';
 export type GameMode = 'pvp' | 'pve' | 'online';
-export type SkillType = 'thunder' | 'convert' | 'bomb' | 'portal';
+export type SkillType = 'thunder' | 'convert' | 'bomb' | 'portal' | 'double' | 'swap';
 
 export interface Coordinate {
   row: number;

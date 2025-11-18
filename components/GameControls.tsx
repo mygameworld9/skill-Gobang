@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { RefreshCw, Zap, Sparkles, Bomb, Repeat } from 'lucide-react';
+import { RefreshCw, Zap, Sparkles, Bomb, Repeat, Layers, ArrowLeftRight } from 'lucide-react';
 import { Lang, GameMode, Player, SkillType } from '../lib/types';
 import { t, SKILL_COOLDOWNS } from '../lib/constants';
 
@@ -42,7 +42,7 @@ export const GameControls: React.FC<GameControlsProps> = ({
           onClick={() => setActiveSkill(skill)}
           disabled={!isMyTurn || !isReady || gameStatus !== 'playing' || isAiOpponent}
           className={`
-            w-12 h-12 flex items-center justify-center rounded-xl transition-all shadow-md
+            w-10 h-10 sm:w-12 sm:h-12 flex items-center justify-center rounded-xl transition-all shadow-md
             ${isActive 
               ? activeColorClass 
               : isMyTurn && isReady && !isAiOpponent
@@ -62,7 +62,7 @@ export const GameControls: React.FC<GameControlsProps> = ({
         </button>
         
         {/* Label & CD Info */}
-        <div className="hidden md:block absolute -bottom-6 whitespace-nowrap text-[10px] font-bold text-stone-600 opacity-0 group-hover:opacity-100 transition-opacity">
+        <div className="hidden md:block absolute -bottom-6 whitespace-nowrap text-[10px] font-bold text-stone-600 opacity-0 group-hover:opacity-100 transition-opacity z-50 bg-white/80 px-1 rounded">
            {label} ({maxCooldown})
         </div>
       </div>
@@ -73,16 +73,21 @@ export const GameControls: React.FC<GameControlsProps> = ({
     <div className="flex flex-col sm:flex-row items-center gap-4 sm:gap-8 mb-6 bg-stone-200/50 p-2 rounded-2xl">
         
         {/* Black Skills (Left) */}
-        <div className="flex gap-3 items-center">
+        <div className="flex gap-2 sm:gap-3 items-center">
            {renderSkillButton(
              'black', 'thunder', cooldowns.thunder, SKILL_COOLDOWNS.blackThunder,
-             <Zap size={22} className={activeSkill === 'thunder' ? 'fill-current' : ''} />, 
+             <Zap size={20} className={activeSkill === 'thunder' ? 'fill-current' : ''} />, 
              text.skillThunder, 'bg-stone-800 text-white', 'bg-red-600 text-white ring-4 ring-red-200'
            )}
            {renderSkillButton(
              'black', 'bomb', cooldowns.bomb, SKILL_COOLDOWNS.blackBomb,
-             <Bomb size={22} className={activeSkill === 'bomb' ? 'fill-current animate-pulse' : ''} />, 
+             <Bomb size={20} className={activeSkill === 'bomb' ? 'fill-current animate-pulse' : ''} />, 
              text.skillBomb, 'bg-stone-800 text-white', 'bg-orange-600 text-white ring-4 ring-orange-200'
+           )}
+           {renderSkillButton(
+             'black', 'double', cooldowns.double, SKILL_COOLDOWNS.blackDouble,
+             <Layers size={20} className={activeSkill === 'double' ? 'fill-current' : ''} />, 
+             text.skillDouble, 'bg-stone-800 text-white', 'bg-yellow-600 text-white ring-4 ring-yellow-200'
            )}
         </div>
 
@@ -100,16 +105,21 @@ export const GameControls: React.FC<GameControlsProps> = ({
         </div>
 
         {/* White Skills (Right) */}
-        <div className="flex gap-3 items-center">
+        <div className="flex gap-2 sm:gap-3 items-center">
            {renderSkillButton(
              'white', 'convert', cooldowns.convert, SKILL_COOLDOWNS.whiteConvert,
-             <Sparkles size={22} className={activeSkill === 'convert' ? 'fill-current' : ''} />, 
+             <Sparkles size={20} className={activeSkill === 'convert' ? 'fill-current' : ''} />, 
              text.skillConvert, 'bg-white text-stone-800 border-2 border-stone-300', 'bg-purple-600 text-white ring-4 ring-purple-200 border-transparent'
            )}
            {renderSkillButton(
              'white', 'portal', cooldowns.portal, SKILL_COOLDOWNS.whitePortal,
-             <Repeat size={22} className={activeSkill === 'portal' ? 'animate-spin-slow' : ''} />, 
+             <Repeat size={20} className={activeSkill === 'portal' ? 'animate-spin-slow' : ''} />, 
              text.skillPortal, 'bg-white text-stone-800 border-2 border-stone-300', 'bg-blue-500 text-white ring-4 ring-blue-200 border-transparent'
+           )}
+           {renderSkillButton(
+             'white', 'swap', cooldowns.swap, SKILL_COOLDOWNS.whiteSwap,
+             <ArrowLeftRight size={20} className={activeSkill === 'swap' ? '' : ''} />, 
+             text.skillSwap, 'bg-white text-stone-800 border-2 border-stone-300', 'bg-emerald-500 text-white ring-4 ring-emerald-200 border-transparent'
            )}
         </div>
     </div>

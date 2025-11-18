@@ -11,7 +11,7 @@ import { RemoteConnection } from './components/RemoteConnection';
 import { Lang, GameMode, SkillType, NetworkMessage } from './lib/types';
 
 const App = () => {
-  const [lang, setLang] = useState<Lang>('zh');
+  const [lang, setLang] = useState<Lang>('en');
   const [gameMode, setGameMode] = useState<GameMode>('pvp');
 
   const { 

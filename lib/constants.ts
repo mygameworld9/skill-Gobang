@@ -7,8 +7,10 @@ export const BOARD_SIZE = 15;
 export const SKILL_COOLDOWNS = {
   blackThunder: 5,
   blackBomb: 10,
+  blackDouble: 12,
   whiteConvert: 7,
-  whitePortal: 4
+  whitePortal: 4,
+  whiteSwap: 9
 };
 
 export const TRANSLATIONS = {
@@ -24,8 +26,10 @@ export const TRANSLATIONS = {
     guest: "(访客)",
     skillThunder: "⚡ 雷击",
     skillBomb: "💣 轰炸",
+    skillDouble: "⚡⚡ 连动",
     skillConvert: "🔮 策反",
     skillPortal: "🌀 传送",
+    skillSwap: "🔄 交换",
     cancelSkill: "取消",
     selectSource: "选择棋子",
     selectDest: "选择位置",
@@ -63,8 +67,10 @@ export const TRANSLATIONS = {
     guest: "(Guest)",
     skillThunder: "⚡ Thunder",
     skillBomb: "💣 Bomb",
+    skillDouble: "⚡⚡ Double",
     skillConvert: "🔮 Convert",
     skillPortal: "🌀 Portal",
+    skillSwap: "🔄 Swap",
     cancelSkill: "Cancel",
     selectSource: "Select Stone",
     selectDest: "Select Pos",
