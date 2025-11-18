@@ -1,5 +1,5 @@
 
-# Skill Gobang (技能五子棋)
+# Skill Gobang 
 
 A Gomoku (Five in a Row) game with RPG-like skill elements, powered by Google Gemini AI.
 
