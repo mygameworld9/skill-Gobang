@@ -1,0 +1,5 @@
+{
+  "name": "技能五子棋 (Skill Gobang)",
+  "description": "A strategic Gomoku game with special skills powered by Gemini AI.",
+  "requestFramePermissions": []
+}
